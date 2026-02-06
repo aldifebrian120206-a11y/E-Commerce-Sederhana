@@ -9,140 +9,232 @@ if (!isset($_SESSION['login_user'])) {
 
 $user_sekarang = $_SESSION['login_user'];
 
-$query_str = "SELECT o.*, 
-              (SELECT GROUP_CONCAT(CONCAT(p.nama_produk, ' (', oi.qty, ')') SEPARATOR '<br>') 
-               FROM order_items oi 
-               JOIN products p ON oi.product_id = p.id 
-               WHERE oi.order_id = o.id) as rincian_produk
+// 1. Logika Konfirmasi Terima Barang
+if (isset($_GET['konfirmasi_id'])) {
+    $id_order = mysqli_real_escape_string($conn, $_GET['konfirmasi_id']);
+    $update_query = "UPDATE orders SET status = 'SELESAI' 
+                     WHERE id = '$id_order' AND nama_pelanggan = '$user_sekarang'";
+    mysqli_query($conn, $update_query);
+    echo "<script>alert('Pesanan telah selesai. Silakan berikan rating!'); window.location='riwayat.php';</script>";
+}
+
+// 2. Logika Simpan Rating
+if (isset($_POST['submit_rating'])) {
+    $id_order = mysqli_real_escape_string($conn, $_POST['order_id']);
+    $star = mysqli_real_escape_string($conn, $_POST['rating']);
+    mysqli_query($conn, "UPDATE orders SET rating = '$star' WHERE id = '$id_order' AND nama_pelanggan = '$user_sekarang'");
+    echo "<script>alert('Terima kasih atas rating Anda!'); window.location='riwayat.php';</script>";
+}
+
+$query_str = "SELECT o.*, u.nama_lengkap 
               FROM orders o 
-              WHERE o.nama_pelanggan = '$user_sekarang'
+              LEFT JOIN users u ON o.nama_pelanggan = u.username 
+              WHERE o.nama_pelanggan = '$user_sekarang' 
               ORDER BY o.id DESC";
 
 $query = mysqli_query($conn, $query_str);
+
+if (!$query) {
+    $query_str = "SELECT * FROM orders WHERE nama_pelanggan = '$user_sekarang' ORDER BY id DESC";
+    $query = mysqli_query($conn, $query_str);
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Riwayat Pesanan - Batik Nusantara</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat - Batik Nusantara</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         :root { 
-            --soga-gelap: #2c1810; 
-            --soga-tabel: #3d251c; 
-            --emas: #b8860b; 
-            --emas-t: #ffd700; 
-            --krem: #f5deb3; 
+            --soga-gelap: #1a0f0a; 
+            --soga-kartu: #2a1810; 
+            --emas-tua: #8e6516; 
+            --emas-muda: #d4af37; 
+            --krem-batik: #c5b5a5; 
         }
 
         body { 
-            background: var(--soga-gelap); 
-            background-image: url('https://www.transparenttextures.com/patterns/batik-thin.png'); 
-            color: var(--emas-t); 
+            background-color: var(--soga-gelap); 
+            background-image: linear-gradient(rgba(26, 15, 10, 0.95), rgba(26, 15, 10, 0.95)), 
+                              url('https://www.transparenttextures.com/patterns/batik-thin.png'); 
+            color: var(--krem-batik); 
             font-family: 'Georgia', serif; 
         }
 
         .card-riwayat { 
-            background: var(--soga-tabel); 
-            border: 2px solid var(--emas); 
-            border-radius: 15px; 
-            margin-bottom: 20px;
+            background: var(--soga-kartu); 
+            border: 1px solid var(--emas-tua); 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 50px;
         }
 
-        /* TABEL WARNA COKELAT */
         .table { 
-            color: var(--emas-t) !important; 
+            color: var(--krem-batik) !important; 
             margin-bottom: 0;
             background-color: transparent !important;
+            border-collapse: collapse;
         }
 
-        .table > :not(caption) > * > * {
-            background-color: var(--soga-tabel) !important;
-            color: var(--emas-t) !important;
-            border-bottom: 1px solid rgba(184, 134, 11, 0.3) !important;
-            padding: 15px;
-        }
-
-        .table th { 
-            background: var(--emas) !important; 
-            color: var(--soga-gelap) !important; 
+        .table thead th { 
+            background: var(--emas-tua) !important; 
+            color: var(--soga-gelap) !important;
             text-transform: uppercase; 
-            font-size: 0.8rem; 
+            font-size: 0.75rem; 
+            letter-spacing: 2px;
+            padding: 15px !important;
             border: none;
             text-align: center;
         }
 
-        /* WARNA BADGE STATUS (DIBIARKAN TETAP BERWARNA) */
+        .table tbody td {
+            background-color: transparent !important;
+            border-bottom: 1px solid rgba(142, 101, 22, 0.2) !important;
+            padding: 18px !important;
+            vertical-align: middle;
+            color: var(--krem-batik);
+        }
+
+        .nama-penerima { color: var(--emas-muda); font-weight: bold; font-size: 0.9rem; }
+        .alamat-info { color: var(--krem-batik); opacity: 0.7; font-size: 0.8rem; font-family: sans-serif; }
+
         .status-badge {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 0.65rem;
             font-weight: bold;
             display: inline-block;
-            min-width: 110px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            border: 1px solid;
+            background: rgba(0,0,0,0.3);
+            text-transform: uppercase;
         }
-        .status-proses { background: #6c757d; color: white; }
-        .status-dikemas { background: #0dcaf0; color: #000; }
-        .status-dikirim { background: #ffc107; color: #000; }
-        .status-selesai { background: #198754; color: white; }
-        
-        .produk-list { font-size: 0.8rem; color: var(--krem); font-style: italic; }
-        .alamat-text { font-size: 0.75rem; color: var(--krem); opacity: 0.8; }
+        .status-proses { color: #a08060; border-color: #a08060; }
+        .status-dikirim { color: #ffbf00; border-color: #ffbf00; }
+        .status-selesai { color: #2ecc71; border-color: #2ecc71; background: rgba(46, 204, 113, 0.1); }
+
+        .btn-terima {
+            background: transparent;
+            color: var(--emas-muda);
+            border: 1px solid var(--emas-muda);
+            font-size: 0.7rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: 0.3s;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        .btn-terima:hover {
+            background: var(--emas-muda);
+            color: var(--soga-gelap);
+        }
+
+        /* Style Rating */
+        .select-rating {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--emas-tua);
+            color: var(--emas-muda);
+            font-size: 0.7rem;
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        .harga { color: var(--emas-muda); font-weight: bold; font-family: Arial, sans-serif; }
     </style>
 </head>
 <body>
     <?php include 'navbar.php'; ?>
 
-    <div class="container-fluid px-4 py-5">
-        <h2 class="text-center mb-5 fw-bold" style="color: var(--emas-t); letter-spacing: 3px;">
-            <i class="bi bi-clock-history me-2"></i> RIWAYAT PESANAN
+    <div class="container py-5">
+        <h2 class="text-center mb-5" style="color: var(--emas-muda); letter-spacing: 5px; font-weight: 300;">
+            RIWAYAT PESANAN
         </h2>
         
-        <?php if (mysqli_num_rows($query) > 0): ?>
-            <div class="card-riwayat shadow-lg">
+        <?php if ($query && mysqli_num_rows($query) > 0): ?>
+            <div class="card-riwayat">
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Tanggal</th>
-                                <th>Penerima & Alamat</th>
-                                <th>Produk</th>
-                                <th>Total Bayar</th>
-                                <th>Status Pengiriman</th>
+                                <th>TANGGAL</th>
+                                <th class="text-start">PENERIMA</th>
+                                <th>TOTAL</th>
+                                <th>STATUS / RATING</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php while($row = mysqli_fetch_assoc($query)): ?>
                             <tr>
-                                <td class="text-center small"><?= date('d M Y', strtotime($row['tgl_order'])) ?></td>
-                                <td>
-                                    <div class="fw-bold text-uppercase" style="color: #fff;"><?= $row['nama_pelanggan'] ?></div>
-                                    <div class="alamat-text mt-1"><?= nl2br($row['alamat']) ?></div>
+                                <td class="text-center small opacity-75">
+                                    <?= date('d/m/Y', strtotime($row['tgl_order'])) ?>
                                 </td>
-                                <td class="produk-list"><?= $row['rincian_produk'] ?></td>
-                                <td class="fw-bold">
-                                    <div style="color: var(--emas-t);">Rp<?= number_format($row['total_bayar'], 0, ',', '.') ?></div>
-                                    <div class="small text-muted" style="font-size: 0.7rem;"><?= $row['metode_bayar'] ?></div>
+                                <td>
+                                    <div class="nama-penerima">
+                                        <?php 
+                                            if(!empty($row['nama_penerima'])) {
+                                                echo strtoupper($row['nama_penerima']);
+                                            } elseif(!empty($row['nama_lengkap'])) {
+                                                echo strtoupper($row['nama_lengkap']);
+                                            } else {
+                                                echo strtoupper($row['nama_pelanggan']);
+                                            }
+                                        ?>
+                                    </div>
+                                    <div class="alamat-info mt-1"><?= nl2br($row['alamat']) ?></div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="harga">Rp <?= number_format($row['total_bayar'], 0, ',', '.') ?></div>
+                                    <div class="small opacity-50" style="font-size: 0.6rem;"><?= $row['metode_bayar'] ?></div>
                                 </td>
                                 <td class="text-center">
                                     <?php 
                                         $s = strtoupper($row['status']);
                                         $class = "status-proses";
-                                        $icon = "bi-clock";
-
-                                        if($s == 'DIKEMAS') { $class = "status-dikemas"; $icon = "bi-box-seam"; }
-                                        elseif($s == 'DIKIRIM') { $class = "status-dikirim"; $icon = "bi-truck"; }
-                                        elseif($s == 'SELESAI') { $class = "status-selesai"; $icon = "bi-check-circle"; }
+                                        if($s == 'DIKIRIM') $class = "status-dikirim";
+                                        elseif($s == 'SELESAI') $class = "status-selesai";
                                     ?>
+                                    
                                     <div class="status-badge <?= $class ?>">
-                                        <i class="bi <?= $icon ?> me-1"></i> <?= $s ?>
+                                        <?= $s ?>
                                     </div>
+
+                                    <?php if($s == 'DIKIRIM'): ?>
+                                        <div class="mt-1">
+                                            <a href="riwayat.php?konfirmasi_id=<?= $row['id'] ?>" 
+                                               class="btn-terima" 
+                                               onclick="return confirm('Konfirmasi barang telah diterima?')">
+                                               TERIMA BARANG
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if($s == 'SELESAI'): ?>
+                                        <div class="mt-2">
+                                            <?php if(empty($row['rating'])): ?>
+                                                <form method="POST" class="d-flex flex-column align-items-center">
+                                                    <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
+                                                    <select name="rating" class="select-rating mb-1">
+                                                        <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                                                        <option value="4">⭐⭐⭐⭐ (4)</option>
+                                                        <option value="3">⭐⭐⭐ (3)</option>
+                                                        <option value="2">⭐⭐ (2)</option>
+                                                        <option value="1">⭐ (1)</option>
+                                                    </select>
+                                                    <button type="submit" name="submit_rating" class="btn-terima border-0 bg-secondary text-white py-1" style="font-size:0.6rem;">Kirim Rating</button>
+                                                </form>
+                                            <?php else: ?>
+                                                <div class="text-warning small mt-1">
+                                                    <?php for($i=1; $i<=$row['rating']; $i++) echo "★"; ?>
+                                                    <span class="text-white opacity-50" style="font-size: 0.6rem;">(<?= $row['rating'] ?>/5)</span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endwhile; ?>
@@ -152,9 +244,8 @@ $query = mysqli_query($conn, $query_str);
             </div>
         <?php else: ?>
             <div class="text-center py-5">
-                <i class="bi bi-cart-x fs-1 text-muted"></i>
-                <p class="mt-3">Belum ada riwayat pesanan.</p>
-                <a href="katalog.php" class="btn btn-outline-warning">Belanja Sekarang</a>
+                <p class="opacity-50">Belum ada riwayat transaksi.</p>
+                <a href="katalog.php" class="btn-terima">MULAI BELANJA</a>
             </div>
         <?php endif; ?>
     </div>

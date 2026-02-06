@@ -2,12 +2,6 @@
 session_start();
 include '../config/config.php';
 
-// Proteksi: Jika sudah login, dilempar ke index.
-if (isset($_SESSION['login_user'])) {
-    header("Location: index.php");
-    exit;
-}
-
 $error = "";
 
 if (isset($_POST['login'])) {
@@ -24,7 +18,7 @@ if (isset($_POST['login'])) {
             $_SESSION['role'] = $row['role'];
 
             if ($row['role'] == 'admin') {
-                header("Location: ../admin/orders.php");
+                header("Location: ../admin/index.php");
             } else {
                 header("Location: index.php");
             }
@@ -48,18 +42,19 @@ if (isset($_POST['login'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         :root { 
-            --soga: #2c1810; 
-            --soga-m: #3d251c; 
-            --emas: #b8860b; 
-            --emas-t: #ffd700; 
-            --krem: #f5deb3; 
+            --soga-deep: #160d08; 
+            --soga-card: #22140e; 
+            --emas-dim: #8e6516; 
+            --emas-bright: #b8924b; 
+            --krem-soft: #c5b5a5; 
         }
 
         body { 
-            background: var(--soga); 
-            background-image: url('https://www.transparenttextures.com/patterns/batik-thin.png'); 
-            color: var(--krem);
-            font-family: 'Georgia', serif; 
+            background-color: var(--soga-deep); 
+            background-image: linear-gradient(rgba(22, 13, 8, 0.97), rgba(22, 13, 8, 0.97)), 
+                              url('https://www.transparenttextures.com/patterns/batik-thin.png'); 
+            color: var(--krem-soft);
+            font-family: 'Times New Roman', serif;
             display: flex;
             align-items: center;      
             justify-content: center;   
@@ -67,162 +62,146 @@ if (isset($_POST['login'])) {
             margin: 0;
         }
 
-        .wrapper {
-            position: relative;
-            padding: 20px 60px;
-        }
-
-        /* Aksen Batik Samping Melengkung */
-        .wrapper::before, .wrapper::after {
-            content: "";
-            position: absolute;
-            width: 8px;
-            height: 50%;
-            top: 25%;
-            background: linear-gradient(to bottom, transparent, var(--emas), transparent);
-            border-radius: 50px;
-            opacity: 0.4;
-            box-shadow: 0 0 15px var(--emas);
-        }
-        .wrapper::before { left: 10px; }
-        .wrapper::after { right: 10px; }
-
         .login-card {
-            background: var(--soga-m);
-            border: 2px solid var(--emas); 
-            border-radius: 50px; 
-            padding: 50px 40px;
+            background: var(--soga-card);
+            border: 1px solid rgba(142, 101, 22, 0.3);
+            border-radius: 20px;
+            padding: 50px 45px;
             width: 100%;
-            max-width: 420px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            max-width: 400px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
             text-align: center;
         }
 
         .profile-siluet {
-            width: 85px;
-            height: 85px;
-            margin: 0 auto 25px;
-            border: 2px solid var(--emas);
+            width: 65px;
+            height: 65px;
+            margin: 0 auto 20px;
+            border: 1px solid var(--emas-dim);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--soga);
-            color: var(--emas-t);
-            box-shadow: 0 0 15px rgba(184, 134, 11, 0.3);
+            color: var(--emas-bright);
         }
-        .profile-siluet i { font-size: 3.2rem; }
+        .profile-siluet i { font-size: 2.2rem; }
 
         h2 {
-            color: var(--emas-t);
-            font-weight: bold;
+            color: var(--emas-bright);
+            font-weight: 300;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 30px;
-            font-size: 1.6rem;
+            letter-spacing: 4px;
+            margin-bottom: 35px;
+            font-size: 1.3rem;
         }
 
         .form-label {
-            color: var(--emas);
-            font-size: 0.8rem;
+            color: var(--emas-dim);
+            font-size: 0.7rem;
             text-transform: uppercase;
-            font-weight: bold;
+            letter-spacing: 2px;
             display: block;
             text-align: left;
-            margin-left: 20px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            padding-left: 2px;
         }
 
         .form-control {
-            background: var(--soga) !important;
-            border: 1px solid var(--emas);
-            color: var(--krem) !important;
-            border-radius: 25px; 
-            padding: 12px 25px;
-            margin-bottom: 20px;
+            background: rgba(0,0,0,0.15) !important;
+            border: 1px solid #36261b;
+            color: var(--krem-soft) !important;
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .form-control:focus {
+            background: rgba(0,0,0,0.25) !important;
+            border-color: var(--emas-dim);
+            box-shadow: none;
         }
 
         .btn-login {
-            background: var(--emas);
-            color: var(--soga);
+            background: var(--emas-dim);
+            color: #fff;
             border: none;
             width: 100%;
-            padding: 14px;
-            border-radius: 25px; 
+            padding: 12px;
+            border-radius: 6px; 
             font-weight: bold;
             text-transform: uppercase;
-            transition: 0.3s;
-            letter-spacing: 1px;
+            transition: 0.4s;
+            letter-spacing: 2px;
+            margin-top: 10px;
         }
 
         .btn-login:hover {
-            background: var(--emas-t);
-            transform: scale(1.03);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            background: var(--emas-bright);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        /* Bagian Footer untuk Register */
         .footer-text {
-            margin-top: 30px;
-            font-size: 0.9rem;
-            color: var(--krem);
-            opacity: 0.8;
-            border-top: 1px solid rgba(184, 134, 11, 0.3);
+            margin-top: 35px;
+            font-size: 0.8rem;
+            color: #6d5543;
+            border-top: 1px solid rgba(142, 101, 22, 0.15);
             padding-top: 20px;
         }
 
         .footer-text a {
-            color: var(--emas-t);
+            color: var(--emas-bright);
             text-decoration: none;
             font-weight: bold;
-            transition: 0.2s;
+            transition: 0.3s;
         }
 
         .footer-text a:hover {
-            text-shadow: 0 0 10px var(--emas-t);
+            color: #e5c07b;
         }
 
         .error-msg {
-            color: #ff4d4d;
-            font-size: 0.85rem;
+            color: #b35e5e;
+            font-size: 0.8rem;
             margin-bottom: 20px;
-            background: rgba(255, 77, 77, 0.1);
-            padding: 8px;
-            border-radius: 10px;
+            border-left: 2px solid #b35e5e;
+            padding: 5px 10px;
+            text-align: left;
+            background: rgba(179, 94, 94, 0.05);
         }
     </style>
 </head>
 <body>
 
-    <div class="wrapper">
-        <div class="login-card">
-            <div class="profile-siluet">
-                <i class="bi bi-person-circle"></i>
+    <div class="login-card">
+        <div class="profile-siluet">
+            <i class="bi bi-person"></i>
+        </div>
+        
+        <h2>Authentikasi</h2>
+
+        <?php if ($error): ?>
+            <div class="error-msg">
+                <i class="bi bi-info-circle me-1"></i> <?= $error; ?>
             </div>
-            
-            <h2>Pintu Masuk</h2>
+        <?php endif; ?>
 
-            <?php if ($error): ?>
-                <div class="error-msg">
-                    <i class="bi bi-exclamation-triangle me-1"></i> <?= $error; ?>
-                </div>
-            <?php endif; ?>
-
-            <form action="" method="POST">
+        <form action="" method="POST">
+            <div class="text-start">
                 <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" placeholder="ID Pengguna..." required autocomplete="off">
+                <input type="text" name="username" class="form-control" placeholder="ID Pengguna" required autocomplete="off">
                 
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" placeholder="Kata Sandi..." required>
-
-                <button type="submit" name="login" class="btn-login">Masuk Sekarang</button>
-            </form>
-
-            <div class="footer-text">
-                Belum memiliki akun? <br>
-                <a href="../register.php">Daftar Akun Baru</a>
+                <input type="password" name="password" class="form-control" placeholder="Sandi" required>
             </div>
-        </div>
+
+            <button type="submit" name="login" class="btn-login">Masuk</button>
+        </form>
+        
+        <div class="footer-text">
+    Belum memiliki akses? 
+    <a href="daftar.php">Daftar Akun</a> </div>
     </div>
 
 </body>

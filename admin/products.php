@@ -40,113 +40,148 @@ $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Koleksi - Admin Batik</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root { 
-            --soga: #4b2c20; 
-            --soga-gelap: #2c1810; 
-            --emas: #b8860b; 
-            --emas-t: #ffd700; 
+            --soga-deep: #160d08; 
+            --soga-card: #22140e; 
+            --emas-dim: #8e6516; 
+            --emas-bright: #b8924b; 
+            --krem-soft: #c5b5a5; 
         }
 
         body { 
-            background: var(--soga) !important; 
-            background-image: url('https://www.transparenttextures.com/patterns/batik-thin.png') !important; 
-            color: var(--emas-t) !important; 
+            background-color: var(--soga-deep) !important; 
+            background-image: linear-gradient(rgba(22, 13, 8, 0.95), rgba(22, 13, 8, 0.95)), 
+                              url('https://www.transparenttextures.com/patterns/batik-thin.png') !important; 
+            color: var(--krem-soft) !important; 
             font-family: 'Georgia', serif; 
         }
 
-        /* Card Container */
+        /* Card Custom */
         .card-custom { 
-            background: var(--soga-gelap) !important; 
-            border: 2px solid var(--emas) !important; 
+            background: var(--soga-card) !important; 
+            border: 1px solid var(--emas-dim) !important; 
             border-radius: 15px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            position: relative;
+            overflow: hidden;
         }
 
-        h4 { color: var(--emas-t) !important; letter-spacing: 2px; font-weight: bold; }
+        h4 { color: var(--emas-bright) !important; letter-spacing: 3px; font-weight: bold; text-transform: uppercase; }
 
-        /* FORM - MENGHAPUS SEMUA WARNA PUTIH */
-        label { color: var(--emas-t) !important; }
+        /* Form Styling - Anti Putih */
+        label { color: var(--emas-bright) !important; letter-spacing: 1px; margin-bottom: 5px; }
         .form-control { 
-            background: rgba(0,0,0,0.3) !important; 
-            border: 1px solid var(--emas) !important; 
-            color: var(--emas-t) !important; 
+            background: rgba(0,0,0,0.4) !important; 
+            border: 1px solid rgba(142, 101, 22, 0.3) !important; 
+            color: white !important; 
+            border-radius: 8px;
         }
-        .form-control:focus { box-shadow: 0 0 10px var(--emas) !important; }
+        .form-control:focus { 
+            background: rgba(0,0,0,0.6) !important;
+            border-color: var(--emas-bright) !important; 
+            box-shadow: 0 0 10px rgba(184, 146, 75, 0.2) !important; 
+        }
+        .form-control::placeholder { color: rgba(197, 181, 165, 0.2); }
 
-        /* TABEL - ANTI PUTIH */
+        /* File Input khusus */
+        input[type="file"]::file-selector-button {
+            background: var(--emas-dim);
+            color: var(--soga-deep);
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        /* Tabel Styling */
         .table-responsive { 
-            background: var(--soga-gelap) !important; 
-            border: 1px solid var(--emas) !important; 
+            border: 1px solid var(--emas-dim) !important; 
             border-radius: 10px;
+            background: transparent;
         }
 
         .table { 
-            --bs-table-bg: transparent !important; /* Menghapus warna default bootstrap */
-            background-color: transparent !important;
-            color: var(--emas-t) !important; 
+            color: var(--krem-soft) !important; 
             margin-bottom: 0 !important;
         }
 
-        /* Menghapus background putih pada cell */
-        .table th, .table td { 
-            background-color: transparent !important; 
-            border-color: var(--emas) !important; 
-            color: var(--emas-t) !important;
-            padding: 15px !important;
-        }
-
-        /* Gaya Khusus Header Tabel */
         .table thead th { 
-            background-color: var(--emas) !important; 
-            color: var(--soga-gelap) !important; 
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        /* Baris selang-seling coklat */
-        .table tbody tr:nth-child(even) {
-            background-color: rgba(255, 255, 255, 0.03) !important; /* Memberi sedikit perbedaan tanpa jadi putih */
-        }
-
-        /* Tombol */
-        .btn-emas { 
-            background: var(--emas) !important; 
-            color: var(--soga-gelap) !important; 
+            background-color: var(--emas-dim) !important; 
+            color: var(--soga-deep) !important; 
             border: none !important;
-            border-radius: 50px !important;
-            font-weight: bold;
+            padding: 15px !important;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
         }
-        .btn-emas:hover { background: var(--emas-t) !important; }
 
+        .table td { 
+            background-color: transparent !important; 
+            border-color: rgba(142, 101, 22, 0.1) !important; 
+            padding: 15px !important;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(184, 146, 75, 0.03) !important;
+        }
+
+        /* Tombol Utama */
+        .btn-emas { 
+            background: linear-gradient(135deg, var(--emas-dim), var(--emas-bright)) !important; 
+            color: var(--soga-deep) !important; 
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .btn-emas:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(184, 146, 75, 0.3);
+            filter: brightness(1.1);
+        }
+
+        /* Tombol Aksi */
         .btn-aksi-edit { 
-            border: 1px solid var(--emas-t) !important; 
-            color: var(--emas-t) !important; 
-            padding: 5px 12px;
+            border: 1px solid var(--emas-bright) !important; 
+            color: var(--emas-bright) !important; 
+            padding: 6px 15px;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
+            transition: 0.3s;
         }
-        .btn-aksi-edit:hover { background: var(--emas-t) !important; color: var(--soga-gelap) !important; }
+        .btn-aksi-edit:hover { background: var(--emas-bright) !important; color: var(--soga-deep) !important; }
 
         .btn-aksi-hapus { 
             border: 1px solid #7a1a1a !important; 
-            color: #ff6666 !important; 
-            padding: 5px 12px;
+            color: #ff8080 !important; 
+            padding: 6px 15px;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
+            transition: 0.3s;
         }
+        .btn-aksi-hapus:hover { background: #7a1a1a !important; color: white !important; }
 
         .img-produk { 
-            border: 1px solid var(--emas) !important; 
+            border: 1px solid var(--emas-dim) !important; 
             border-radius: 8px; 
             object-fit: cover;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
         }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--soga-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--emas-dim); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -156,66 +191,80 @@ $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
     <div class="container py-5">
         <div class="row">
             <div class="col-lg-4 mb-4">
-                <div class="card-custom p-4">
+                <div class="card-custom p-4 sticky-top" style="top: 100px; z-index: 10;">
                     <h4 class="text-center mb-4">TAMBAH KOLEKSI</h4>
                     <form method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label class="small fw-bold">NAMA PRODUK</label>
-                            <input type="text" name="nama_produk" class="form-control" placeholder="..." required>
+                            <input type="text" name="nama_produk" class="form-control" placeholder="Masukkan nama batik..." required autocomplete="off">
                         </div>
                         <div class="mb-3">
                             <label class="small fw-bold">HARGA (RP)</label>
-                            <input type="number" name="harga" class="form-control" placeholder="..." required>
+                            <input type="number" name="harga" class="form-control" placeholder="Contoh: 250000" required>
                         </div>
                         <div class="mb-3">
                             <label class="small fw-bold">DESKRIPSI</label>
-                            <textarea name="deskripsi" class="form-control" rows="3"></textarea>
+                            <textarea name="deskripsi" class="form-control" rows="4" placeholder="Detail produk..."></textarea>
                         </div>
                         <div class="mb-4">
                             <label class="small fw-bold">FOTO PRODUK</label>
                             <input type="file" name="foto" class="form-control" required>
                         </div>
-                        <button type="submit" name="tambah" class="btn btn-emas w-100 py-2">SIMPAN</button>
+                        <button type="submit" name="tambah" class="btn btn-emas w-100 py-2">
+                            SIMPAN KOLEKSI <i class="bi bi-plus-lg ms-1"></i>
+                        </button>
                     </form>
                 </div>
             </div>
 
             <div class="col-lg-8">
                 <div class="card-custom p-4">
-                    <h4 class="mb-4 text-uppercase">Daftar Katalog Batik</h4>
+                    <h4 class="mb-4">DAFTAR KATALOG BATIK</h4>
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table align-middle">
                             <thead>
                                 <tr>
-                                    <th class="text-center">FOTO</th>
+                                    <th class="text-center" width="100">FOTO</th>
                                     <th>PRODUK</th>
-                                    <th>HARGA</th>
-                                    <th class="text-center">AKSI</th>
+                                    <th width="150">HARGA</th>
+                                    <th class="text-center" width="180">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php while($p = mysqli_fetch_assoc($products)): ?>
-                                <tr>
-                                    <td class="text-center">
-                                        <img src="../assets/<?= $p['foto'] ?>" width="60" height="60" class="img-produk">
-                                    </td>
-                                    <td>
-                                        <div style="color: var(--emas-t); font-weight: bold;"><?= $p['nama_produk'] ?></div>
-                                        <div style="color: var(--emas); font-size: 0.8rem; opacity: 0.8;">
-                                            <?= substr($p['deskripsi'], 0, 45) ?>...
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span style="color: #fff; font-weight: bold;">Rp<?= number_format($p['harga'], 0, ',', '.') ?></span>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <a href="edit.php?id=<?= $p['id'] ?>" class="btn-aksi-edit">EDIT</a>
-                                            <a href="products.php?hapus=<?= $p['id'] ?>" class="btn-aksi-hapus" onclick="return confirm('Hapus produk?')">HAPUS</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <?php endwhile; ?>
+                                <?php if(mysqli_num_rows($products) > 0): ?>
+                                    <?php while($p = mysqli_fetch_assoc($products)): ?>
+                                    <tr>
+                                        <td class="text-center">
+                                            <img src="../assets/<?= $p['foto'] ?>" width="70" height="70" class="img-produk">
+                                        </td>
+                                        <td>
+                                            <div style="color: var(--emas-bright); font-weight: bold; letter-spacing: 0.5px;"><?= strtoupper($p['nama_produk']) ?></div>
+                                            <div style="color: var(--krem-soft); font-size: 0.75rem; opacity: 0.6; margin-top: 4px; line-height: 1.4;">
+                                                <?= (strlen($p['deskripsi']) > 60) ? substr($p['deskripsi'], 0, 60) . '...' : $p['deskripsi'] ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span style="color: #fff; font-family: 'Arial', sans-serif; font-size: 0.9rem;">
+                                                Rp <?= number_format($p['harga'], 0, ',', '.') ?>
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <a href="edit.php?id=<?= $p['id'] ?>" class="btn-aksi-edit">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                                <a href="products.php?hapus=<?= $p['id'] ?>" class="btn-aksi-hapus" onclick="return confirm('Hapus produk ini secara permanen?')">
+                                                    <i class="bi bi-trash3"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center opacity-50 py-5">Belum ada koleksi produk.</td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -224,5 +273,6 @@ $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

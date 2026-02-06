@@ -3,6 +3,22 @@ session_start();
 include '../config/config.php';
 if (empty($_SESSION['cart'])) { header("Location: katalog.php"); exit; }
 
+$user_sekarang = $_SESSION['login_user'];
+
+// --- LOGIKA AMBIL NAMA USER AGAR TIDAK MUNCUL 'ADMIN' ---
+$nama_default = $user_sekarang; // Cadangan jika database tidak ketemu
+$cek_user = mysqli_query($conn, "SELECT * FROM users WHERE username = '$user_sekarang'");
+
+if ($cek_user && mysqli_num_rows($cek_user) > 0) {
+    $data = mysqli_fetch_assoc($cek_user);
+    // Cek apakah kolomnya bernama nama_lengkap atau nama
+    if (!empty($data['nama_lengkap'])) {
+        $nama_default = $data['nama_lengkap'];
+    } elseif (!empty($data['nama'])) {
+        $nama_default = $data['nama'];
+    }
+}
+
 // Hitung total belanja dari session
 $subtotal = 0;
 foreach($_SESSION['cart'] as $id => $qty) {
@@ -18,49 +34,93 @@ foreach($_SESSION['cart'] as $id => $qty) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        :root { --soga: #4b2c20; --emas: #b8860b; --emas-t: #ffd700; }
+        :root { 
+            --soga-deep: #160d08; 
+            --soga-card: #22140e; 
+            --emas-dim: #8e6516; 
+            --emas-bright: #b8924b; 
+            --krem-soft: #c5b5a5; 
+        }
+
         body { 
-            background: var(--soga); 
-            background-image: url('https://www.transparenttextures.com/patterns/batik-thin.png'); 
-            color: var(--emas); 
-            font-family: 'Georgia', serif; 
+            background-color: var(--soga-deep); 
+            background-image: linear-gradient(rgba(22, 13, 8, 0.97), rgba(22, 13, 8, 0.97)), 
+                              url('https://www.transparenttextures.com/patterns/batik-thin.png'); 
+            color: var(--krem-soft); 
+            font-family: 'Times New Roman', serif; 
         }
+
         .card-checkout { 
-            background: rgba(0,0,0,0.8); 
-            border: 2px solid var(--emas); 
+            background: var(--soga-card); 
+            border: 1px solid rgba(142, 101, 22, 0.2); 
             border-radius: 15px; 
-            backdrop-filter: blur(10px); 
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .form-label { color: var(--emas-t); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+
+        .form-label { 
+            color: var(--emas-bright); 
+            font-weight: 300; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+        }
+
         .form-control, .form-select { 
-            background: rgba(255,255,255,0.05) !important; 
-            border: 1px solid var(--emas) !important; 
+            background: rgba(0,0,0,0.2) !important; 
+            border: 1px solid rgba(142, 101, 22, 0.3) !important; 
             color: white !important; 
+            font-size: 0.9rem;
+            border-radius: 8px;
+            padding: 10px 15px;
         }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--emas-bright) !important;
+            box-shadow: none;
+        }
+
         .summary-box { 
-            background: rgba(255,215,0,0.05); 
-            border: 1px solid var(--emas); 
-            border-radius: 10px; 
-            padding: 15px; 
+            background: rgba(142, 101, 22, 0.05); 
+            border: 1px solid var(--emas-dim); 
+            border-radius: 12px; 
+            padding: 20px; 
         }
+
         .payment-info {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(142, 101, 22, 0.1);
+            border-radius: 12px;
+            padding: 20px;
             font-size: 0.85rem;
-            color: #fff;
+            color: var(--krem-soft);
         }
-        .bank-name { color: var(--emas-t); font-weight: bold; }
-        .btn-selesai { 
-            background: var(--emas); 
-            color: white; 
+
+        .bank-name { 
+            color: var(--emas-bright); 
             font-weight: bold; 
-            border-radius: 10px; 
-            border: none; 
-            padding: 12px; 
-            transition: 0.3s;
+            letter-spacing: 1px;
         }
-        .btn-selesai:hover { background: var(--emas-t); color: #000; }
+
+        .btn-selesai { 
+            background: var(--emas-dim); 
+            color: white; 
+            font-weight: 300; 
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-radius: 8px; 
+            border: none; 
+            padding: 15px; 
+            transition: 0.4s;
+        }
+
+        .btn-selesai:hover { 
+            background: var(--emas-bright); 
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        hr { border-color: rgba(142, 101, 22, 0.2); }
     </style>
 </head>
 <body>
@@ -68,50 +128,71 @@ foreach($_SESSION['cart'] as $id => $qty) {
 
     <div class="container py-5 mt-4">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card-checkout p-4 p-md-5 shadow-lg">
-                    <h3 class="text-center fw-bold mb-4" style="color: var(--emas-t); letter-spacing: 2px;">CHECKOUT PEMBAYARAN</h3>
+            <div class="col-lg-10">
+                <div class="card-checkout p-4 p-md-5">
+                    <h3 class="text-center fw-light mb-5" style="color: var(--emas-bright); letter-spacing: 5px;">CHECKOUT PEMBAYARAN</h3>
                     
                     <form action="proses_checkout.php" method="POST">
-                        <div class="row">
-                            <div class="col-md-6 border-end border-secondary">
-                                <div class="mb-3">
+                        <div class="row g-5">
+                            <div class="col-md-6 border-end border-secondary" style="border-color: rgba(255,255,255,0.05) !important;">
+                                <div class="mb-4">
                                     <label class="form-label">Nama Penerima</label>
-                                    <input type="text" name="nama" class="form-control" value="<?= $_SESSION['login_user'] ?>" required>
+                                    <input type="text" name="nama" class="form-control" value="<?= htmlspecialchars($nama_default) ?>" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Nomor WhatsApp</label>
+                                    <input type="number" name="no_telp" class="form-control" placeholder="Contoh: 08123456789" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">Alamat Pengiriman</label>
+                                    <textarea name="alamat_lengkap" class="form-control" rows="4" placeholder="Tuliskan alamat lengkap Anda..." required></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Nomor WA</label>
-                                    <input type="number" name="no_telp" class="form-control" placeholder="08xxx" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Alamat Lengkap</label>
-                                    <textarea name="alamat_lengkap" class="form-control" rows="4" required></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Kurir</label>
+                                    <label class="form-label">Pilih Kurir</label>
                                     <select name="kurir" class="form-select" required>
-                                        <option value="JNE">JNE</option>
+                                        <option value="JNE">JNE Express</option>
                                         <option value="J&T">J&T Express</option>
                                         <option value="SICEPAT">SiCepat</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <div class="col-md-6 ps-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label">Informasi Rekening & E-Wallet</label>
-                                <div class="payment-info mb-3">
-                                    <p class="mb-1"><span class="bank-name">BCA:</span> 12345</p>
-                                    <p class="mb-1"><span class="bank-name">BRI:</span> 12345</p>
-                                    <p class="mb-1"><span class="bank-name">MANDIRI:</span> 123456</p>
-                                    <p class="mb-1"><span class="bank-name">BNI:</span> 12345</p>
-                                    <hr style="border-color: var(--emas);">
-                                    <p class="mb-1"><span class="bank-name">DANA:</span> 087766554433</p>
-                                    <p class="mb-1"><span class="bank-name">SHOPEEPAY:</span> 087766553433</p>
-                                    <p class="mb-0"><span class="bank-name">OVO:</span> 0888998877766</p>
+                                <div class="payment-info mb-4">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="bank-name">BCA</span>
+                                        <span class="text-white">12345</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="bank-name">BRI</span>
+                                        <span class="text-white">12345</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="bank-name">MANDIRI</span>
+                                        <span class="text-white">123456</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="bank-name">BNI</span>
+                                        <span class="text-white">12345</span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="bank-name">DANA</span>
+                                        <span class="text-white">087766554433</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="bank-name">SHOPEEPAY</span>
+                                        <span class="text-white">087766553433</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="bank-name">OVO</span>
+                                        <span class="text-white">0888998877766</span>
+                                    </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">Konfirmasi Metode Transfer</label>
+                                <div class="mb-4">
+                                    <label class="form-label">Metode Pembayaran</label>
                                     <select name="metode_bayar" class="form-select" required>
                                         <option value="Transfer Bank">Transfer Bank (BCA/BRI/MDR/BNI)</option>
                                         <option value="E-Wallet">E-Wallet (Dana/SPay/OVO)</option>
@@ -119,19 +200,23 @@ foreach($_SESSION['cart'] as $id => $qty) {
                                 </div>
 
                                 <div class="summary-box mt-4">
-                                    <div class="small text-white">Total Tagihan:</div>
-                                    <div class="fs-3 fw-bold" style="color: var(--emas-t);">Rp <?= number_format($subtotal, 0, ',', '.') ?></div>
+                                    <div class="small opacity-50 text-uppercase mb-1" style="letter-spacing: 1px;">Total Tagihan :</div>
+                                    <div class="fs-2 fw-bold" style="color: var(--emas-bright); font-family: Arial, sans-serif;">
+                                        Rp <?= number_format($subtotal, 0, ',', '.') ?>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn-selesai w-100 mt-4 shadow fw-bold">
-                            <i class="bi bi-shield-check me-2"></i> SELESAIKAN PEMBAYARAN
+                        <button type="submit" class="btn-selesai w-100 mt-5">
+                            <i class="bi bi-shield-check me-2"></i> Konfirmasi Pembayaran
                         </button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

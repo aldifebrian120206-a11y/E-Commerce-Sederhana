@@ -2,23 +2,20 @@
 session_start();
 include '../config/config.php';
 
-// --- LOGIKA PROSES KERANJANG (Di dalam satu file) ---
+// --- LOGIKA PROSES KERANJANG ---
 if (isset($_GET['id'])) {
     $id_produk = $_GET['id'];
 
-    // Buat session keranjang jika belum ada
     if (!isset($_SESSION['cart'])) {
         $_SESSION['cart'] = [];
     }
 
-    // Tambah jumlah produk ke session
     if (isset($_SESSION['cart'][$id_produk])) {
         $_SESSION['cart'][$id_produk] += 1;
     } else {
         $_SESSION['cart'][$id_produk] = 1;
     }
 
-    // Bersihkan URL agar saat di-refresh tidak menambah jumlah terus-menerus
     header("Location: keranjang.php");
     exit;
 }
@@ -44,93 +41,108 @@ if (isset($_GET['hapus'])) {
     
     <style>
         :root { 
-            --soga: #4b2c20; 
-            --soga-gelap: #2c1810; 
-            --emas: #b8860b; 
-            --emas-t: #ffd700; 
+            --soga-deep: #160d08; 
+            --soga-card: #22140e; 
+            --emas-dim: #8e6516; 
+            --emas-bright: #b8924b; 
+            --krem-soft: #c5b5a5; 
         }
 
         body { 
-            background: var(--soga) !important; 
-            background-image: url('https://www.transparenttextures.com/patterns/batik-thin.png') !important; 
-            color: var(--emas-t) !important; 
-            font-family: 'Georgia', serif; 
+            background-color: var(--soga-deep) !important; 
+            background-image: linear-gradient(rgba(22, 13, 8, 0.97), rgba(22, 13, 8, 0.97)), 
+                              url('https://www.transparenttextures.com/patterns/batik-thin.png') !important; 
+            color: var(--krem-soft) !important; 
+            font-family: 'Times New Roman', serif; 
             min-height: 100vh;
         }
 
         .card-cart { 
-            background: var(--soga-gelap) !important; 
-            border: 2px solid var(--emas) !important; 
+            background: var(--soga-card) !important; 
+            border: 1px solid rgba(142, 101, 22, 0.2) !important; 
             border-radius: 15px; 
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
             margin-top: 20px;
         }
 
-        /* Tabel Anti Putih */
+        h3 {
+            color: var(--emas-bright);
+            letter-spacing: 3px;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+
+        /* Tabel Midnight Theme */
         .table-responsive { 
-            border: 1px solid var(--emas); 
+            border: 1px solid rgba(142, 101, 22, 0.1); 
             border-radius: 10px; 
-            overflow: hidden; 
             background: rgba(0,0,0,0.2);
         }
 
         .table { 
             --bs-table-bg: transparent !important; 
-            background-color: transparent !important;
-            color: var(--emas-t) !important; 
+            color: var(--krem-soft) !important; 
             margin-bottom: 0 !important;
+            border-color: rgba(142, 101, 22, 0.1) !important;
         }
 
-        .table th, .table td { 
-            background-color: transparent !important; 
-            border-color: var(--emas) !important; 
-            color: var(--emas-t) !important;
-            padding: 15px !important;
-            vertical-align: middle;
-        }
-
-        .table thead th { 
-            background-color: var(--emas) !important; 
-            color: var(--soga-gelap) !important; 
+        .table th { 
+            background-color: rgba(142, 101, 22, 0.05) !important; 
+            color: var(--emas-bright) !important; 
             text-transform: uppercase;
-            font-weight: bold;
-            border: none !important;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            padding: 20px !important;
+            border-bottom: 1px solid rgba(142, 101, 22, 0.2) !important;
+        }
+
+        .table td { 
+            padding: 20px !important;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(142, 101, 22, 0.05) !important;
         }
 
         .btn-checkout { 
-            background: var(--emas) !important; 
-            color: var(--soga-gelap) !important; 
-            font-weight: bold; 
-            border-radius: 50px; 
+            background: var(--emas-dim) !important; 
+            color: #fff !important; 
+            border-radius: 5px; 
             padding: 12px 40px; 
             text-decoration: none; 
-            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.85rem;
             transition: 0.3s;
             border: none;
         }
 
         .btn-checkout:hover { 
-            background: var(--emas-t) !important; 
-            box-shadow: 0 0 15px var(--emas-t);
-            transform: scale(1.05);
-            color: var(--soga-gelap) !important;
+            background: var(--emas-bright) !important; 
+            transform: translateY(-2px);
         }
         
         .btn-hapus { 
-            color: #ff6666; 
+            color: #b35e5e; 
             text-decoration: none; 
-            font-size: 0.85rem; 
-            font-weight: bold;
+            font-size: 0.75rem; 
+            letter-spacing: 1px;
             transition: 0.3s;
         }
 
-        .btn-hapus:hover { color: #ff0000; text-shadow: 0 0 5px red; }
+        .btn-hapus:hover { color: #ff4444; }
 
         .total-price {
-            font-size: 1.8rem;
-            color: white;
-            font-weight: bold;
+            font-size: 2rem;
+            color: var(--emas-bright);
+            font-family: Arial, sans-serif;
+        }
+
+        .badge-qty {
+            background: transparent;
+            border: 1px solid var(--emas-dim);
+            color: var(--emas-bright);
+            padding: 5px 12px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -139,19 +151,19 @@ if (isset($_GET['hapus'])) {
     <?php include 'navbar.php'; ?>
 
     <div class="container py-5">
-        <div class="card-cart shadow-lg">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold m-0"><i class="bi bi-cart3 me-2"></i> KERANJANG BELANJA</h3>
-                <a href="katalog.php" style="color: var(--emas-t); text-decoration: none;" class="small">
-                    <i class="bi bi-arrow-left"></i> Kembali Belanja
+        <div class="card-cart">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <h3 class="m-0">Keranjang Belanja</h3>
+                <a href="katalog.php" style="color: var(--emas-dim); text-decoration: none;" class="small text-uppercase">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali Belanja
                 </a>
             </div>
 
             <?php if(empty($_SESSION['cart'])): ?>
                 <div class="text-center py-5">
-                    <i class="bi bi-cart-x" style="font-size: 4rem; opacity: 0.3;"></i>
-                    <p class="mt-3" style="color: var(--emas);">Keranjang Anda masih kosong.</p>
-                    <a href="katalog.php" class="btn btn-outline-warning mt-2">Mulai Belanja</a>
+                    <i class="bi bi-cart-x opacity-25" style="font-size: 4rem;"></i>
+                    <p class="mt-3 opacity-50">Keranjang Anda masih kosong.</p>
+                    <a href="katalog.php" class="btn-checkout mt-3 d-inline-block">Mulai Belanja</a>
                 </div>
             <?php else: ?>
                 <div class="table-responsive">
@@ -160,7 +172,7 @@ if (isset($_GET['hapus'])) {
                             <tr>
                                 <th>Produk</th>
                                 <th class="text-center">Qty</th>
-                                <th>Harga Satuan</th>
+                                <th>Harga</th>
                                 <th>Subtotal</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
@@ -177,16 +189,16 @@ if (isset($_GET['hapus'])) {
                             ?>
                             <tr>
                                 <td>
-                                    <span class="fw-bold text-white"><?= $p['nama_produk'] ?></span>
+                                    <div class="fw-normal text-white text-uppercase" style="letter-spacing: 1px; font-size: 0.9rem;"><?= $p['nama_produk'] ?></div>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge border border-warning px-3 py-2"><?= $qty ?></span>
+                                    <span class="badge-qty"><?= $qty ?></span>
                                 </td>
-                                <td>Rp <?= number_format($p['harga'], 0, ',', '.') ?></td>
-                                <td class="fw-bold" style="color: var(--emas-t);">Rp <?= number_format($sub, 0, ',', '.') ?></td>
+                                <td class="opacity-75">Rp <?= number_format($p['harga'], 0, ',', '.') ?></td>
+                                <td class="fw-bold" style="color: var(--emas-bright);">Rp <?= number_format($sub, 0, ',', '.') ?></td>
                                 <td class="text-center">
                                     <a href="keranjang.php?hapus=<?= $id ?>" class="btn-hapus" onclick="return confirm('Hapus barang dari keranjang?')">
-                                        <i class="bi bi-trash"></i> HAPUS
+                                        <i class="bi bi-trash3 me-1"></i> HAPUS
                                     </a>
                                 </td>
                             </tr>
@@ -196,13 +208,13 @@ if (isset($_GET['hapus'])) {
                 </div>
 
                 <div class="mt-5 text-end">
-                    <p class="mb-1 opacity-75">Total Pembayaran:</p>
+                    <p class="mb-1 small opacity-50 text-uppercase" style="letter-spacing: 2px;">Total Pembayaran:</p>
                     <h2 class="total-price mb-4">Rp <?= number_format($total, 0, ',', '.') ?></h2>
-                    <hr style="border-color: var(--emas); opacity: 0.3;">
+                    <hr style="border-color: rgba(142, 101, 22, 0.2);">
                     <div class="d-flex justify-content-end align-items-center gap-4 mt-4">
-                        <a href="katalog.php" style="color: var(--emas); text-decoration: none; font-weight: bold;">LANJUT BELANJA</a>
+                        <a href="katalog.php" style="color: var(--emas-dim); text-decoration: none; font-size: 0.8rem;" class="text-uppercase fw-bold">Lanjut Belanja</a>
                         <a href="checkout.php" class="btn-checkout">
-                            CHECKOUT SEKARANG <i class="bi bi-chevron-right ms-1"></i>
+                            Proses Checkout <i class="bi bi-chevron-right ms-2"></i>
                         </a>
                     </div>
                 </div>
